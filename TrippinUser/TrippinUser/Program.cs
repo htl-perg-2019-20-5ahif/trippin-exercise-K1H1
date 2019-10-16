@@ -21,7 +21,7 @@ namespace TrippinUser
 			var fileUsers = JsonSerializer.Deserialize<List<FileUser>>(fileText);
 
 			//add missing users
-			var added = await AddMissingUsers(fileUsers);
+			await AddMissingUsers(fileUsers);
 
 		}
 
@@ -42,7 +42,7 @@ namespace TrippinUser
 		/// Checks if a user from the .json- file is already in the API, if not, the user is added
 		/// </summary>
 		/// <param name="fileUsers"></param>
-		public static async Task<string> AddMissingUsers(List<FileUser> fileUsers)
+		public static async Task AddMissingUsers(List<FileUser> fileUsers)
 		{
 			foreach (FileUser user in fileUsers)
 			{
@@ -84,7 +84,6 @@ namespace TrippinUser
 
 			}
 
-			return " ";
 		}
 	}
 }
