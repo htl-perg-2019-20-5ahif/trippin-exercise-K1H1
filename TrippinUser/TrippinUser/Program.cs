@@ -21,7 +21,7 @@ namespace TrippinUser
 			var fileUsers = JsonSerializer.Deserialize<List<FileUser>>(fileText);
 
 			//add missing users
-			AddMissingUsers(fileUsers);
+			var added = await AddMissingUsers(fileUsers);
 
 		}
 
@@ -32,8 +32,6 @@ namespace TrippinUser
 		/// <returns>A string with the file content</returns>
 		public static async Task<string> ReadFile(string filename)
 		{
-
-			Console.WriteLine("readFile");
 			var filetext = await File.ReadAllTextAsync(filename);
 
 			return filetext;
@@ -44,56 +42,49 @@ namespace TrippinUser
 		/// Checks if a user from the .json- file is already in the API, if not, the user is added
 		/// </summary>
 		/// <param name="fileUsers"></param>
-		public async static void AddMissingUsers(List<FileUser> fileUsers)
+		public static async Task<string> AddMissingUsers(List<FileUser> fileUsers)
 		{
-			Console.WriteLine("fileUser size:" + fileUsers.Count);
-			Console.WriteLine(fileUsers[1].FirstName);
-
 			foreach (FileUser user in fileUsers)
 			{
-				Console.WriteLine("in Loop");
-
+				//check if user is already in the list
 				var userResponse = await client.GetAsync("People('" + user.UserName + "')");
 
-				Console.WriteLine("in Loop 2");
 
 				if (!userResponse.IsSuccessStatusCode)
 				{
-					Console.WriteLine("in if");
 
-					Console.WriteLine("User added: " + user.UserName);
-					HttpResponseMessage response = await client.PostAsync("People", new StringContent(JsonSerializer.Serialize(new
+					HttpResponseMessage addResponse = await client.PostAsync("People", new StringContent(JsonSerializer.Serialize(new
+
 					{
-						user.UserName,
-						user.FirstName,
-						user.LastName,
-						Email = new List<string> { user.Emails },
-						AddressInfo = new List<object>{
-									new
-									{
-										user.Address,
-										City = new
-										{
-											Name = user.CityName,
-											CountryRegion = user.Country,
-											Region = user.Country
-										}
-									}
-					}
+						UserName = user.UserName,
+						FirstName = user.FirstName,
+						LastName = user.LastName,
+						Emails = new[] {
+							user.Emails
+						},
 
+						AddressInfo = new[] {
+						new {
+						Address = user.Address,
+						City = new  {
+							Name = user.CityName,
+							CountryRegion = user.Country,
+							Region = "unknown"
+						}
+					}
+				}
 					}), Encoding.UTF8, "application/json"));
-					
+					Console.WriteLine("Add user: " + addResponse.StatusCode.ToString() + "| " + user.UserName);
+
 				}
 				else
 				{
-					Console.WriteLine("in else");
 					Console.WriteLine("User already exists: " + user.UserName);
 				}
 
-				Console.WriteLine("End of code");
 			}
 
-
+			return " ";
 		}
 	}
 }
